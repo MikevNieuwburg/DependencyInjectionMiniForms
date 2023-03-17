@@ -1,21 +1,25 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using MiniFormsConsole.Core;
+using MiniFormsConsole.Decode;
+using MiniFormsConsole.TextReplace;
 
 public static class Program
 {
     public static void Main(string[] args)
     {
-        var services = new ServiceCollection();
-        services.AddSingleton<IService1, ServiceA>();
-        services.AddSingleton<IService2, ServiceB>();
-        services.AddSingleton<IService3, ServiceC>();
-        services.AddTransient<IService, ServiceA>();
-        services.AddTransient<IService, ServiceB>();
-        services.AddTransient<IService, ServiceC>();
-        services.AddTransient<SampleClass>();
-
-        var serviceProvider = services.BuildServiceProvider();
-        SampleClass classUsage = serviceProvider.GetService<SampleClass>();
+        var provider = ServiceRegistration.RegisterServices();
         Console.WriteLine("Sample");
-        classUsage.DoSomething();
+        var serviceRunner = provider.GetRequiredService<ServiceRunner>();
+        var replace = provider.GetRequiredService<TextReplace>();
+        var decode = provider.GetRequiredService<Decode>();
+        replace.Order = serviceRunner.ServicesCount();
+        decode.Order = serviceRunner.ServicesCount();
+
+        serviceRunner.Add(replace);
+        serviceRunner.Add(decode);
+        serviceRunner.Remove(decode);
+        serviceRunner.RunServices();
+
+
     }
 }
